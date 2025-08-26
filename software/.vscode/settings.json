@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "serialmonitor.h": "c",
+        "bluetooth.h": "c",
+        "stdint.h": "c",
+        "lcd.h": "c",
+        "led.h": "c",
+        "myoware.h": "c"
+    }
+}

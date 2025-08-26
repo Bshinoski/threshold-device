@@ -1,0 +1,165 @@
+-------------------------------
+Overview
+-------------------------------
+
+UnitTests.c uses a C Unity testing framework covering all main components of
+the ThresholdDevice. From testing the init to testing certain actions it makes
+sure the correct bits are arranged in each register.
+
+-------------------------------
+Mock file descriptions
+-------------------------------
+
+mock_delay_cycles.h:
+Mocks the __delay_cycles() intrinsic function used for timing delays, which 
+normally pauses execution on actual hardware.
+
+mock_msp430.c
+Used to simulate the MSP430's hardware registers and behavior 
+in a test environment where you're not actually running on the microcontroller.
+
+-------------------------------
+How to Run tests.c
+-------------------------------
+
+Sit in ThresholdDevice/tests
+For Linux: run "make" in command line (Other OSs I am unsure of)
+
+Example:
+ben@BenThreshold:~/Documents/ThresholdDevice/tests$ make
+rm -f tests.out
+gcc -std=c99 -Wall -Wextra -Wpointer-arith -Wcast-align -Wwrite-strings -Wswitch-default -Wunreachable-code -Winit-self -Wmissing-field-initializers -Wno-unknown-pragmas -Wundef -I/home/ben/ti/msp430-gcc/include -I/home/ben/ti/msp430-gcc/include/msp430 -DHOST_BUILD -D__MSP430FR5994__ tests.c ../software/hm10bluetooth/bluetooth.c ../software/myoware/myoware.c ../software/myoware/serialmonitor.c ../software/led/led.c ../software/timer/timer.c ./unity/src/unity.c ../software/lcd/lcd.c mock_msp430.c -o tests.out
+./tests.out
+
+--- Unit Tests ---
+tests.c:559:test_init_gpio_uart_pins:PASS
+tests.c:560:test_init_clock:PASS
+tests.c:561:test_init_uart:PASS
+tests.c:562:test_uart_send_char:PASS
+tests.c:563:test_uart_send_string:PASS
+tests.c:564:test_init_bluetooth:PASS
+tests.c:567:test_initLEDs:PASS
+tests.c:568:test_setGreenLED:PASS
+tests.c:569:test_setRedLED:PASS
+tests.c:572:test_initADC:PASS
+tests.c:573:test_readADC:PASS
+tests.c:577:test_delayMs:PASS
+tests.c:578:test_delayMsTimer:PASS
+tests.c:581:test_LCD_init:PASS
+tests.c:582:test_LCD_command:PASS
+tests.c:583:test_LCD_data:PASS
+tests.c:584:test_LCD_setCursor:PASS
+tests.c:585:test_LCD_clear:PASS
+tests.c:586:test_displayTimeOnLCD:PASS
+
+--- Integration Tests ---
+tests.c:589:test_bluetooth_full_send:PASS
+tests.c:590:test_adc_led_response:PASS
+tests.c:591:test_display_adc_value_on_lcd:PASS
+tests.c:592:test_time_display_after_delay:PASS
+tests.c:593:test_full_system_init:PASS
+
+-----------------------
+24 Tests 0 Failures 0 Ignored 
+OK
+
+-------------------------------
+Bluetooth Tests:
+-------------------------------
+
+test_init_gpio_uart_pins: Verifies that the UART GPIO pins are configured 
+correctly and low-power mode is disabled.
+
+test_init_clock: Ensures the system clock is set up for an 8 MHz DCO with 
+correct dividers and clock sources.
+
+test_init_uart: Checks that UART is initialized with proper 
+settings, including baud rate and clock source.
+
+test_uart_send_char: Tests if a single character is transmitted by 
+placing it in the UART transmit buffer.
+
+test_uart_send_string: Validates that a string is sent 
+character by character over UART, ending with the correct last character.
+
+test_init_bluetooth: Confirms that the complete Bluetooth 
+initialization sequence sets up GPIO, clock, and UART properly.
+
+-------------------------------
+LED Tests:
+-------------------------------
+
+test_initLEDs: Checks that the red and green LEDs are correctly configured 
+as outputs and initialized with the right on/off state.
+
+test_setGreenLED: Verifies that the green LED can be turned on and off by 
+writing to the correct output pin.
+
+test_setRedLED: Verifies that the red LED can be turned on and off by writing 
+to the correct output pin.
+
+-------------------------------
+Myoware Tests:
+-------------------------------
+
+test_initADC: Ensures the ADC is correctly configured with the right 
+input channel, sample time, resolution, and clock settings.
+
+test_readADC: Tests that the ADC start conversion flag is set and the 
+correct ADC result is returned.
+
+-------------------------------
+Timer Tests:
+-------------------------------
+
+test_delayMs: Verifies that delayMs calls the correct number of 
+mock delay cycles based on milliseconds.
+
+test_delayMsTimer: Confirms delayMsTimer uses the CYCLES_PER_MS 
+constant to calculate delay cycles accurately.
+
+-------------------------------
+LCD Tests:
+-------------------------------
+
+test_LCD_init: Checks that all LCD control/data pins are configured as 
+outputs and LCD_write4bits is called during initialization.
+
+test_LCD_command: Validates that sending a command to the LCD sets the 
+RS pin correctly and writes the proper command nibbles.
+
+test_LCD_data: Ensures that data sent to the LCD sets the RS pin for data 
+mode and sends the correct character nibbles.
+
+test_LCD_setCursor: Confirms that the cursor position command is 
+translated into the correct address nibbles for the LCD.
+
+test_LCD_clear: Verifies that sending a clear display command triggers 
+the appropriate LCD command sequence.
+
+test_displayTimeOnLCD: Tests the full sequence of cursor positioning 
+and character writing needed to display a time value on the LCD.
+
+-------------------------------
+LCD Tests:
+-------------------------------
+
+test_bluetooth_full_send
+Verifies that after initializing the Bluetooth module, a string can be 
+correctly sent over UART and the hardware state is properly configured.
+
+test_adc_led_response
+Ensures that an analog value read from the ADC correctly controls 
+which LED (red or green) is turned on based on a threshold.
+
+test_display_adc_value_on_lcd
+Confirms that a value read from the ADC is passed to the LCD display logic, 
+resulting in the correct number of nibble writes.
+
+test_time_display_after_delay
+Validates that after a software delay, the LCD correctly displays a time 
+value and the appropriate number of delay cycles is recorded.
+
+test_full_system_init
+Tests that all core modules (Bluetooth, LED, ADC, LCD) can be initialized 
+together without conflict, and their expected register states are correctly set.
